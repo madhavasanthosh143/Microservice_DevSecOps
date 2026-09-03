@@ -1,0 +1,79 @@
+# Local orchestration for developing all 5 services together. Each service's
+# ./services/<name>/Dockerfile is expected to exist (see the per-service
+# README) — this file doesn't build anything on its own until those land.
+#
+# Usage: JWT_SECRET=local-dev-secret docker compose up --build
+
+services:
+  auth-service:
+    build: ./services/auth-service
+    ports: ["8081:8081"]
+    environment:
+      - JWT_SECRET=${JWT_SECRET:?set JWT_SECRET before starting}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8081/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks: [microservices]
+
+  user-service:
+    build: ./services/user-service
+    ports: ["8082:8082"]
+    environment:
+      - JWT_SECRET=${JWT_SECRET:?set JWT_SECRET before starting}
+    depends_on:
+      auth-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8082/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks: [microservices]
+
+  order-service:
+    build: ./services/order-service
+    ports: ["8083:8083"]
+    environment:
+      - JWT_SECRET=${JWT_SECRET:?set JWT_SECRET before starting}
+    depends_on:
+      user-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8083/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks: [microservices]
+
+  inventory-service:
+    build: ./services/inventory-service
+    ports: ["8084:8084"]
+    environment:
+      - JWT_SECRET=${JWT_SECRET:?set JWT_SECRET before starting}
+    depends_on:
+      auth-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8084/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks: [microservices]
+
+  api-gateway:
+    build: ./services/api-gateway
+    ports: ["8080:8080"]
+    environment:
+      - JWT_SECRET=${JWT_SECRET:?set JWT_SECRET before starting}
+    depends_on:
+      order-service:
+        condition: service_healthy
+      inventory-service:
+        condition: service_healthy
+    networks: [microservices]
+
+networks:
+  microservices:
+    driver: bridge

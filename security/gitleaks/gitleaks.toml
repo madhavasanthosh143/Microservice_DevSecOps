@@ -1,0 +1,16 @@
+title = "microservices-demo gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Files that intentionally contain placeholder/example values"
+paths = [
+  '''terraform/environments/.*/terraform\.tfvars\.example''',
+  '''\.github/workflows/.*\.ya?ml''',
+]
+regexes = [
+  '''CHANGE_ME''',
+  '''REPLACE_WITH_[A-Z_]+''',
+  '''REPLACE_PER_SERVICE''',
+]

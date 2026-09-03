@@ -1,0 +1,87 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: microservices
+
+resources:
+  - ../../base
+
+# The per-service CI workflow overwrites its own entry at deploy time, e.g.:
+#   cd k8s/overlays/dev && kustomize edit set image auth-service:local=<account>.dkr.ecr.<region>.amazonaws.com/msdemo/auth-service:<sha>
+images:
+  - name: auth-service:local
+    newName: CHANGE_ME.dkr.ecr.us-east-1.amazonaws.com/msdemo/auth-service
+    newTag: latest
+  - name: user-service:local
+    newName: CHANGE_ME.dkr.ecr.us-east-1.amazonaws.com/msdemo/user-service
+    newTag: latest
+  - name: order-service:local
+    newName: CHANGE_ME.dkr.ecr.us-east-1.amazonaws.com/msdemo/order-service
+    newTag: latest
+  - name: inventory-service:local
+    newName: CHANGE_ME.dkr.ecr.us-east-1.amazonaws.com/msdemo/inventory-service
+    newTag: latest
+  - name: api-gateway:local
+    newName: CHANGE_ME.dkr.ecr.us-east-1.amazonaws.com/msdemo/api-gateway
+    newTag: latest
+
+replicas:
+  - name: auth-service
+    count: 1
+  - name: user-service
+    count: 1
+  - name: order-service
+    count: 1
+  - name: inventory-service
+    count: 1
+  - name: api-gateway
+    count: 1
+
+# Each service's IRSA role ARN comes straight from the Terraform output
+# `github_actions_role_arn`/`irsa_role_arns` in terraform/environments/dev —
+# the role name follows msdemo-dev-irsa-<service>.
+patches:
+  - target:
+      kind: ServiceAccount
+      name: auth-service
+    patch: |-
+      - op: replace
+        path: /metadata/annotations/eks.amazonaws.com~1role-arn
+        value: "arn:aws:iam::CHANGE_ME_ACCOUNT_ID:role/msdemo-dev-irsa-auth-service"
+  - target:
+      kind: ServiceAccount
+      name: user-service
+    patch: |-
+      - op: replace
+        path: /metadata/annotations/eks.amazonaws.com~1role-arn
+        value: "arn:aws:iam::CHANGE_ME_ACCOUNT_ID:role/msdemo-dev-irsa-user-service"
+  - target:
+      kind: ServiceAccount
+      name: order-service
+    patch: |-
+      - op: replace
+        path: /metadata/annotations/eks.amazonaws.com~1role-arn
+        value: "arn:aws:iam::CHANGE_ME_ACCOUNT_ID:role/msdemo-dev-irsa-order-service"
+  - target:
+      kind: ServiceAccount
+      name: inventory-service
+    patch: |-
+      - op: replace
+        path: /metadata/annotations/eks.amazonaws.com~1role-arn
+        value: "arn:aws:iam::CHANGE_ME_ACCOUNT_ID:role/msdemo-dev-irsa-inventory-service"
+  - target:
+      kind: ServiceAccount
+      name: api-gateway
+    patch: |-
+      - op: replace
+        path: /metadata/annotations/eks.amazonaws.com~1role-arn
+        value: "arn:aws:iam::CHANGE_ME_ACCOUNT_ID:role/msdemo-dev-irsa-api-gateway"
+  - target:
+      kind: Ingress
+      name: api-gateway
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: api-dev.example.com
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: api-dev.example.com

@@ -1,0 +1,7 @@
+# Copy to terraform.tfvars and fill in — never commit terraform.tfvars itself.
+
+aws_region  = "us-east-1"
+name_prefix = "msdemo"
+
+github_org  = "your-github-org"
+github_repo = "microservices-demo"

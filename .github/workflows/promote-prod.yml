@@ -1,0 +1,43 @@
+name: promote-to-prod
+
+# Deliberately separate from the per-service dev pipelines: promoting to
+# production is an explicit act (tagging a release), not an automatic
+# consequence of merging to main. The "prod" GitHub Environment should have
+# required reviewers configured in repo settings so this needs a human
+# approval before the deploy job runs.
+
+on:
+  push:
+    tags:
+      - 'release-*'
+  workflow_dispatch:
+    inputs:
+      service:
+        description: "Single service to promote (leave blank to promote all 5)"
+        required: false
+        type: choice
+        options: [all, auth-service, user-service, order-service, inventory-service, api-gateway]
+        default: all
+
+jobs:
+  promote:
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - auth-service
+          - user-service
+          - order-service
+          - inventory-service
+          - api-gateway
+    if: github.event.inputs.service == '' || github.event.inputs.service == 'all' || github.event.inputs.service == matrix.service
+    uses: ./.github/workflows/ci-cd-service.yml
+    with:
+      service-name: ${{ matrix.service }}
+      service-path: services/${{ matrix.service }}
+      environment: prod
+      ecr-repository: msdemo/${{ matrix.service }}
+      eks-cluster-name: msdemo-prod
+      deploy: true
+    secrets:
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}

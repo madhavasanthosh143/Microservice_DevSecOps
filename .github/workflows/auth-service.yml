@@ -1,0 +1,32 @@
+name: auth-service
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/auth-service/**'
+      - '.github/workflows/auth-service.yml'
+      - '.github/workflows/ci-cd-service.yml'
+      - 'k8s/base/auth-service/**'
+      - 'k8s/overlays/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'services/auth-service/**'
+      - '.github/workflows/auth-service.yml'
+      - '.github/workflows/ci-cd-service.yml'
+  workflow_dispatch: {}
+
+jobs:
+  ci-cd:
+    uses: ./.github/workflows/ci-cd-service.yml
+    with:
+      service-name: auth-service
+      service-path: services/auth-service
+      environment: dev
+      ecr-repository: msdemo/auth-service
+      eks-cluster-name: msdemo-dev
+      # Scan/build gates always run; only push-to-main actually deploys.
+      deploy: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    secrets:
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}

@@ -1,0 +1,12 @@
+# Run with: checkov --config-file security/checkov.yaml
+directory:
+  - terraform
+framework:
+  - terraform
+compact: true
+quiet: false
+soft-fail: false
+skip-check:
+  # CKV_AWS_79: IMDSv1 disabled — deferred; nodes use the EKS-managed
+  # launch template default. Revisit when node groups move to a custom LT.
+  - CKV_AWS_79

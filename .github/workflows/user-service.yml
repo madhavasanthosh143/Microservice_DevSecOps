@@ -1,0 +1,32 @@
+name: user-service
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/user-service/**'
+      - '.github/workflows/user-service.yml'
+      - '.github/workflows/ci-cd-service.yml'
+      - 'k8s/base/user-service/**'
+      - 'k8s/overlays/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'services/user-service/**'
+      - '.github/workflows/user-service.yml'
+      - '.github/workflows/ci-cd-service.yml'
+  workflow_dispatch: {}
+
+jobs:
+  ci-cd:
+    uses: ./.github/workflows/ci-cd-service.yml
+    with:
+      service-name: user-service
+      service-path: services/user-service
+      environment: dev
+      ecr-repository: msdemo/user-service
+      eks-cluster-name: msdemo-dev
+      # Scan/build gates always run; only push-to-main actually deploys.
+      deploy: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    secrets:
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}

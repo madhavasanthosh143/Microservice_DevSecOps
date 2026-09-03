@@ -1,0 +1,13 @@
+# Shared Trivy config used by CI for both filesystem/SCA scans and container
+# image scans. Invoke with: trivy --config security/trivy/trivy.yaml <target>
+severity:
+  - CRITICAL
+  - HIGH
+exit-code: 1
+ignore-unfixed: true
+ignorefile: security/trivy/.trivyignore
+scanners:
+  - vuln
+  - secret
+  - misconfig
+format: sarif

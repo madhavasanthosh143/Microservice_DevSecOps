@@ -1,0 +1,5 @@
+# Trivy vulnerability/misconfig IDs to suppress, one per line, each with a
+# reason and an owner so these don't silently accumulate.
+#
+# Example:
+# CVE-2023-XXXXX  # accepted risk: no network-reachable code path, reviewed 2026-09-02 by @vishnu.rm

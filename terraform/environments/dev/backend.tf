@@ -11,9 +11,9 @@
 
 terraform {
   backend "s3" {
-    bucket         = "CHANGE-ME-terraform-state"
+    bucket         = "msdemo-tfstate-075774507058"
     key            = "microservices-demo/dev/terraform.tfstate"
-    region         = "us-east-1"
+    region         = "ap-south-1"
     dynamodb_table = "terraform-locks"
     encrypt        = true
   }

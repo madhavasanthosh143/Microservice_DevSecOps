@@ -1,6 +1,6 @@
 # Copy to terraform.tfvars and fill in — never commit terraform.tfvars itself.
 
-aws_region  = "us-east-1"
+aws_region  = "ap-south-1"
 name_prefix = "msdemo"
 
 github_org  = "your-github-org"
